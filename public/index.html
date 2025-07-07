@@ -201,7 +201,7 @@
     // Cargar productos desde backend
     async function cargarProductos() {
       try {
-        const res = await fetch('/api/products');
+        const res = await fetch('https://sn-pos-backend.onrender.com/api/products')
         productos = await res.json();
         actualizarPromoProductoSelect();
         mostrarProductos(productos);
@@ -403,7 +403,7 @@
       }));
 
       try {
-        const resVenta = await fetch('/api/ventas', {
+        const resVenta = await fetch('https://sn-pos-backend.onrender.com/api/ventas', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -440,7 +440,7 @@
     // Cargar usuarios
     async function cargarUsuarios() {
       try {
-        const res = await fetch('/api/users');
+        const res = await fetch('https://sn-pos-backend.onrender.com/api/users');
         usuarios = await res.json();
       } catch {
         usuarios = [];
@@ -454,7 +454,7 @@
       if (!email) return alert('Email requerido');
       try {
         // Intentar login
-        const res = await fetch('/api/users/login', {
+        const res = await fetch('https://sn-pos-backend.onrender.com/api/users/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email }),
@@ -507,7 +507,7 @@
     // Cargar apartados
     async function cargarApartados() {
       try {
-        const res = await fetch('/api/apartados');
+        const res = await fetch('https://sn-pos-backend.onrender.com/api/apartados');
         apartados = await res.json();
         mostrarApartados();
       } catch {
@@ -538,7 +538,7 @@
           const id = btn.dataset.id;
           if (!confirm('Eliminar apartado?')) return;
           try {
-            const res = await fetch('/api/apartados/' + id, { method: 'DELETE' });
+            const res = await fetch('https://sn-pos-backend.onrender.com/api/apartados/' + id, { method: 'DELETE' });
             if (!res.ok) throw new Error('Error eliminando');
             apartados = apartados.filter(a => a.id !== id);
             mostrarApartados();
@@ -669,7 +669,7 @@
     // Corte de caja: mostrar resumen de ventas y apartados
     async function cargarCorte() {
       try {
-        const resVentas = await fetch('/api/ventas');
+        const resVentas = await fetch('https://sn-pos-backend.onrender.com/api/ventas');
         const ventas = await resVentas.json();
         const resApartados = await fetch('/api/apartados');
         const apartadosRes = await resApartados.json();
