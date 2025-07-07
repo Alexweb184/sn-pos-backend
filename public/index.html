@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SN POS</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* Mínimos estilos para funcionalidad visual clara */
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f5f5f5; }
+    header { background: #222; color: #fff; padding: 10px; display: flex; align-items: center; }
+    header img { height: 60px; }
+    nav button { margin-left: 10px; padding: 8px 12px; background: #444; border: none; color: #fff; cursor: pointer; border-radius: 4px; }
+    nav button:hover { background: #666; }
+    main { display: flex; height: calc(100vh - 80px); }
+    .seccion { flex: 1; overflow-y: auto; padding: 15px; background: white; display: none; }
+    .seccion.active { display: block; }
+    #productos-lista, #apartados-lista, #lista-promociones, #usuarios-lista { margin-top: 10px; }
+    .producto, .apartado-item, .promocion-item { border: 1px solid #ddd; padding: 10px; margin-bottom: 8px; border-radius: 5px; display: flex; align-items: center; gap: 10px; }
+    .producto img { height: 80px; width: 80px; object-fit: contain; }
+    .producto-info { flex: 1; }
+    .btn-agregar, .btn-eliminar, .btn-mayoreo, .btn-pagar, .btn-toggle-carrito, .btn-logout { cursor: pointer; background: #007bff; color: white; border: none; padding: 6px 10px; border-radius: 4px; transition: background-color 0.3s; }
+    .btn-agregar:hover, .btn-eliminar:hover, .btn-mayoreo:hover, .btn-pagar:hover, .btn-logout:hover, .btn-toggle-carrito:hover { background: #0056b3; }
+    #carrito { width: 320px; background: #eee; padding: 10px; box-sizing: border-box; position: relative; transition: transform 0.3s ease; }
+    #carrito.oculto { transform: translateX(100%); }
+    #carrito h2 { margin-top: 0; }
+    .carrito-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .carrito-item div { flex: 1; }
+    .carrito-item button { background: #dc3545; border: none; color: white; border-radius: 3px; padding: 3px 6px; cursor: pointer; }
+    .carrito-item button:hover { background: #a71d2a; }
+    #total-carrito { font-weight: bold; margin-top: 10px; font-size: 1.1em; }
+    #btn-mayoreo { margin: 10px 0; }
+    #btn-toggle-carrito { position: absolute; top: 10px; left: -40px; width: 35px; height: 35px; background: #007bff; color: white; border-radius: 50%; border: none; font-size: 20px; line-height: 35px; text-align: center; }
+    #btn-toggle-carrito:hover { background: #0056b3; }
+    form { margin-top: 10px; }
+    input, select, textarea, button { margin-top: 5px; padding: 6px; width: 100%; box-sizing: border-box; border-radius: 3px; border: 1px solid #ccc; }
+    input[type="file"] { padding: 3px; }
+    #buscador { margin-bottom: 10px; width: calc(100% - 40px); display: inline-block; padding: 6px; }
+    #btn-buscar { width: 30px; height: 30px; margin-left: 5px; vertical-align: middle; cursor: pointer; }
+    .flex-row { display: flex; gap: 10px; flex-wrap: wrap; }
+    .flex-row > * { flex: 1; min-width: 120px; }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="https://cdn.shopify.com/s/files/1/0750/9042/8137/files/IMG_4920.jpg?v=1749940220" alt="Logo" />
+    <nav>
+      <button onclick="mostrarSeccion('productos')">Productos</button>
+      <button onclick="mostrarSeccion('usuarios')">Usuarios</button>
+      <button onclick="mostrarSeccion('apartados')">Apartados</button>
+      <button onclick="mostrarSeccion('excel')">Importar Excel</button>
+      <button onclick="mostrarSeccion('promociones')">Promociones</button>
+      <button onclick="mostrarSeccion('corte')">Corte de Caja</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- PRODUCTOS -->
+    <section id="productos" class="seccion active">
+      <h2>Productos</h2>
+      <div class="flex-row" style="align-items:center; margin-bottom:10px;">
+        <input type="text" id="buscador" placeholder="Buscar producto..." />
+        <button id="btn-buscar" title="Buscar">🔍</button>
+      </div>
+      <button id="btn-mayoreo" class="btn-mayoreo">Activar Precios Mayoreo</button>
+      <div id="productos-lista"></div>
+    </section>
+
+    <!-- USUARIOS -->
+    <section id="usuarios" class="seccion">
+      <h2>Usuarios</h2>
+      <form id="form-login">
+        <input type="email" placeholder="Email" id="email" required />
+        <button type="submit">Iniciar Sesión</button>
+      </form>
+      <button id="btn-registrar-usuario" style="margin-top:10px;">Registrar Nuevo Usuario</button>
+      <button id="btn-logout" class="btn-logout" style="display:none; margin-top:10px;">Cerrar Sesión</button>
+      <p id="usuario-actual" style="margin-top:15px;"></p>
+    </section>
+
+    <!-- APARTADOS -->
+    <section id="apartados" class="seccion">
+      <h2>Apartados</h2>
+      <form id="form-apartado">
+        <input type="text" id="apartado-nombre" placeholder="Nombre del cliente" required />
+        <input type="number" id="apartado-total" placeholder="Total" min="0" step="0.01" required />
+        <input type="number" id="apartado-abonado" placeholder="Cantidad abonada" min="0" step="0.01" required />
+        <input type="number" id="apartado-dias" placeholder="Días para liquidar" min="1" max="365" required />
+        <button type="submit">Agregar Apartado</button>
+      </form>
+      <div id="apartados-lista"></div>
+    </section>
+
+    <!-- IMPORTAR EXCEL -->
+    <section id="excel" class="seccion">
+      <h2>Importar desde Excel</h2>
+      <form id="form-excel" enctype="multipart/form-data">
+        <input type="file" id="archivo-excel" accept=".xlsx, .xls" required />
+        <button type="submit">Importar</button>
+      </form>
+      <div id="resultado-excel"></div>
+    </section>
+
+    <!-- PROMOCIONES -->
+    <section id="promociones" class="seccion">
+      <h2>Promociones</h2>
+      <form id="form-promocion">
+        <select id="promo-producto" required>
+          <option value="">Selecciona producto</option>
+        </select>
+        <select id="promo-tipo" required>
+          <option value="">Tipo de promoción</option>
+          <option value="porcentaje">Porcentaje (%)</option>
+          <option value="cantidad">Cantidad fija</option>
+        </select>
+        <input type="number" id="promo-valor" placeholder="Valor" min="0" step="0.01" required />
+        <textarea id="promo-descripcion" placeholder="Descripción (opcional)"></textarea>
+        <button type="submit">Agregar Promoción</button>
+      </form>
+      <ul id="lista-promociones"></ul>
+    </section>
+
+    <!-- CORTE DE CAJA -->
+    <section id="corte" class="seccion">
+      <h2>Corte de Caja</h2>
+      <button id="btn-exportar-corte" class="btn-pagar">Exportar a Excel</button>
+      <div id="resultado-corte" style="margin-top:15px; color:green;"></div>
+    </section>
+
+    <!-- CARRITO -->
+    <aside id="carrito">
+      <button id="btn-toggle-carrito" title="Mostrar/Ocultar carrito">➡️</button>
+      <h2>Carrito</h2>
+      <div id="carrito-items"></div>
+      <div id="total-carrito">Total: $0.00</div>
+
+      <label for="metodo-pago">Método de Pago:</label>
+      <select id="metodo-pago" style="width:100%; margin-bottom:10px;">
+        <option value="efectivo">Efectivo</option>
+        <option value="tarjeta">Tarjeta</option>
+        <option value="dolar">Dólar</option>
+        <option value="apartado">Apartado</option>
+      </select>
+
+      <div id="input-dolar" style="display:none; margin-bottom:10px;">
+        <label for="tipo-cambio">Tipo de Cambio (USD a MXN):</label>
+        <input type="number" id="tipo-cambio" min="0" step="0.01" value="18.5" />
+      </div>
+
+      <button id="btn-pagar" class="btn-pagar" disabled>Pagar</button>
+    </aside>
+  </main>
+
+  <script>
+    // Variables globales
+    let productos = [];
+    let carrito = [];
+    let promociones = [];
+    let usuarios = [];
+    let usuarioActual = null;
+    let apartados = [];
+    let preciosMayoreoActivado = false;
+
+    // Elementos DOM
+    const secciones = document.querySelectorAll('.seccion');
+    const productosLista = document.getElementById('productos-lista');
+    const carritoItems = document.getElementById('carrito-items');
+    const totalCarrito = document.getElementById('total-carrito');
+    const metodoPagoSelect = document.getElementById('metodo-pago');
+    const btnPagar = document.getElementById('btn-pagar');
+    const inputDolar = document.getElementById('input-dolar');
+    const tipoCambioInput = document.getElementById('tipo-cambio');
+    const btnMayoreo = document.getElementById('btn-mayoreo');
+    const buscadorInput = document.getElementById('buscador');
+    const btnBuscar = document.getElementById('btn-buscar');
+    const btnToggleCarrito = document.getElementById('btn-toggle-carrito');
+    const formLogin = document.getElementById('form-login');
+    const btnRegistrarUsuario = document.getElementById('btn-registrar-usuario');
+    const btnLogout = document.getElementById('btn-logout');
+    const usuarioActualP = document.getElementById('usuario-actual');
+    const formApartado = document.getElementById('form-apartado');
+    const apartadosLista = document.getElementById('apartados-lista');
+    const formExcel = document.getElementById('form-excel');
+    const resultadoExcel = document.getElementById('resultado-excel');
+    const formPromocion = document.getElementById('form-promocion');
+    const listaPromociones = document.getElementById('lista-promociones');
+    const promoProductoSelect = document.getElementById('promo-producto');
+    const promoTipoSelect = document.getElementById('promo-tipo');
+    const promoValorInput = document.getElementById('promo-valor');
+    const promoDescripcionTextarea = document.getElementById('promo-descripcion');
+    const btnExportarCorte = document.getElementById('btn-exportar-corte');
+    const seccionCorte = document.getElementById('corte');
+    let carritoVisible = true;
+
+    // Mostrar sección
+    function mostrarSeccion(id) {
+      secciones.forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
+    // Cargar productos desde backend
+    async function cargarProductos() {
+      try {
+        const res = await fetch('/api/products');
+        productos = await res.json();
+        actualizarPromoProductoSelect();
+        mostrarProductos(productos);
+      } catch (err) {
+        productosLista.innerHTML = '<p>Error cargando productos</p>';
+      }
+    }
+
+    // Mostrar productos en lista
+    function mostrarProductos(lista) {
+      productosLista.innerHTML = '';
+      if (lista.length === 0) {
+        productosLista.innerHTML = '<p>No hay productos.</p>';
+        return;
+      }
+      lista.forEach(p => {
+        const priceToShow = preciosMayoreoActivado && p.variants[0].precioMayoreo ? p.variants[0].precioMayoreo : p.variants[0].price;
+        const div = document.createElement('div');
+        div.className = 'producto';
+        div.innerHTML = `
+          <img src="${p.image || 'https://via.placeholder.com/80'}" alt="img" />
+          <div class="producto-info">
+            <h3>${p.title}</h3>
+            <p>Precio: $${priceToShow.toFixed(2)}</p>
+            <p>Inventario: ${p.variants[0].inventory_quantity}</p>
+            <button class="btn-agregar" data-id="${p.id}">Agregar</button>
+          </div>
+        `;
+        productosLista.appendChild(div);
+      });
+      // Añadir evento a botones agregar
+      document.querySelectorAll('.btn-agregar').forEach(btn => {
+        btn.onclick = () => {
+          const id = btn.dataset.id;
+          agregarAlCarrito(id);
+        };
+      });
+    }
+
+    // Agregar producto al carrito
+    function agregarAlCarrito(productId) {
+      const producto = productos.find(p => p.id === productId);
+      if (!producto) return alert('Producto no encontrado');
+      const price = preciosMayoreoActivado && producto.variants[0].precioMayoreo ? producto.variants[0].precioMayoreo : producto.variants[0].price;
+      const index = carrito.findIndex(item => item.id === productId);
+      if (index === -1) {
+        carrito.push({
+          id: productId,
+          title: producto.title,
+          price,
+          quantity: 1
+        });
+      } else {
+        carrito[index].quantity++;
+      }
+      actualizarCarrito();
+    }
+
+    // Actualizar carrito visualmente
+    function actualizarCarrito() {
+      carritoItems.innerHTML = '';
+      if (carrito.length === 0) {
+        carritoItems.innerHTML = '<p>El carrito está vacío.</p>';
+        btnPagar.disabled = true;
+        actualizarTotal();
+        return;
+      }
+      carrito.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'carrito-item';
+        div.innerHTML = `
+          <div>${item.title} x${item.quantity}</div>
+          <div>$${(item.price * item.quantity).toFixed(2)}</div>
+          <button data-id="${item.id}">X</button>
+        `;
+        carritoItems.appendChild(div);
+      });
+      // Botones eliminar
+      carritoItems.querySelectorAll('button').forEach(btn => {
+        btn.onclick = () => {
+          const id = btn.dataset.id;
+          eliminarDelCarrito(id);
+        };
+      });
+      btnPagar.disabled = false;
+      actualizarTotal();
+    }
+
+    // Eliminar producto del carrito
+    function eliminarDelCarrito(productId) {
+      carrito = carrito.filter(item => item.id !== productId);
+      actualizarCarrito();
+    }
+
+    // Actualizar total del carrito
+    function actualizarTotal() {
+      let total = 0;
+      carrito.forEach(item => {
+        total += item.price * item.quantity;
+      });
+      if (metodoPagoSelect.value === 'dolar') {
+        const tipoCambio = parseFloat(tipoCambioInput.value);
+        if (!isNaN(tipoCambio) && tipoCambio > 0) {
+          total = total / tipoCambio;
+        }
+      }
+      totalCarrito.textContent = `Total: $${total.toFixed(2)}`;
+    }
+
+    // Toggle precios mayoreo
+    btnMayoreo.onclick = () => {
+      preciosMayoreoActivado = !preciosMayoreoActivado;
+      btnMayoreo.textContent = preciosMayoreoActivado ? 'Desactivar Precios Mayoreo' : 'Activar Precios Mayoreo';
+      mostrarProductos(productos);
+      // También actualizar carrito precios si hay productos
+      carrito.forEach(item => {
+        const p = productos.find(prod => prod.id === item.id);
+        if (p) {
+          item.price = preciosMayoreoActivado && p.variants[0].precioMayoreo ? p.variants[0].precioMayoreo : p.variants[0].price;
+        }
+      });
+      actualizarCarrito();
+    };
+
+    // Buscar producto
+    btnBuscar.onclick = () => {
+      const busqueda = buscadorInput.value.trim().toLowerCase();
+      if (!busqueda) {
+        mostrarProductos(productos);
+        return;
+      }
+      const filtrados = productos.filter(p => p.title.toLowerCase().includes(busqueda));
+      mostrarProductos(filtrados);
+    };
+    buscadorInput.onkeypress = (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        btnBuscar.onclick();
+      }
+    };
+
+    // Toggle carrito visibilidad
+    btnToggleCarrito.onclick = () => {
+      const carritoEl = document.getElementById('carrito');
+      carritoVisible = !carritoVisible;
+      if (carritoVisible) {
+        carritoEl.classList.remove('oculto');
+        btnToggleCarrito.textContent = '➡️';
+      } else {
+        carritoEl.classList.add('oculto');
+        btnToggleCarrito.textContent = '⬅️';
+      }
+    };
+
+    // Manejar cambio método pago
+    metodoPagoSelect.onchange = () => {
+      if (metodoPagoSelect.value === 'dolar') {
+        inputDolar.style.display = 'block';
+      } else {
+        inputDolar.style.display = 'none';
+      }
+      actualizarTotal();
+    };
+
+    tipoCambioInput.oninput = () => {
+      actualizarTotal();
+    };
+
+    // Pagar o Apartado
+    btnPagar.onclick = async () => {
+      if (!usuarioActual) return alert('Debes iniciar sesión para cobrar');
+      if (carrito.length === 0) return alert('El carrito está vacío');
+      const metodoPago = metodoPagoSelect.value;
+
+      let esApartado = false;
+      let nombreApartado = '';
+      let totalApartado = 0;
+      let abonadoApartado = 0;
+      let diasApartado = 0;
+
+      if (metodoPago === 'apartado') {
+        nombreApartado = prompt('Nombre del cliente para apartado:');
+        if (!nombreApartado) return alert('Se requiere nombre para apartado');
+        abonadoApartado = parseFloat(prompt('Cantidad abonada:'));
+        if (isNaN(abonadoApartado) || abonadoApartado < 0) return alert('Cantidad abonada inválida');
+        totalApartado = parseFloat(prompt('Total a pagar:'));
+        if (isNaN(totalApartado) || totalApartado <= 0) return alert('Total inválido');
+        diasApartado = parseInt(prompt('Días para liquidar:'), 10);
+        if (isNaN(diasApartado) || diasApartado < 1) return alert('Días inválidos');
+        esApartado = true;
+      }
+
+      // Preparar carrito para enviar (id, title, price, quantity)
+      const carritoParaEnviar = carrito.map(item => ({
+        id: item.id,
+        title: item.title,
+        price: item.price,
+        quantity: item.quantity,
+      }));
+
+      try {
+        const resVenta = await fetch('/api/ventas', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            carrito: carritoParaEnviar,
+            metodoPago,
+            esApartado,
+            fecha: new Date().toISOString(),
+            apartadoInfo: esApartado ? { nombre: nombreApartado, total: totalApartado, abonado: abonadoApartado, diasRestantes: diasApartado } : null
+          }),
+        });
+        const dataVenta = await resVenta.json();
+        if (!resVenta.ok) throw new Error(dataVenta.error || 'Error en la venta');
+
+        // Si es apartado, agregar aparte en frontend para mostrar ya actualizado
+        if (esApartado) {
+          apartados.push({
+            id: Date.now().toString(),
+            nombre: nombreApartado,
+            total: totalApartado,
+            abonado: abonadoApartado,
+            diasRestantes: diasApartado,
+          });
+          mostrarApartados();
+        }
+
+        alert('Venta registrada correctamente');
+        carrito = [];
+        actualizarCarrito();
+      } catch (e) {
+        alert('Error al registrar venta: ' + e.message);
+      }
+    };
+
+    // Cargar usuarios
+    async function cargarUsuarios() {
+      try {
+        const res = await fetch('/api/users');
+        usuarios = await res.json();
+      } catch {
+        usuarios = [];
+      }
+    }
+
+    // Login usuario
+    formLogin.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value.trim().toLowerCase();
+      if (!email) return alert('Email requerido');
+      try {
+        // Intentar login
+        const res = await fetch('/api/users/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email }),
+        });
+        const data = await res.json();
+        if (res.ok && data.user) {
+          usuarioActual = data.user;
+          usuarioActualP.textContent = 'Bienvenido, ' + usuarioActual.email;
+          formLogin.style.display = 'none';
+          btnRegistrarUsuario.style.display = 'none';
+          btnLogout.style.display = 'inline-block';
+        } else {
+          alert(data.error || 'Error al iniciar sesión');
+        }
+      } catch {
+        alert('Error en el servidor');
+      }
+    });
+
+    // Registrar nuevo usuario
+    btnRegistrarUsuario.onclick = async () => {
+      const email = prompt('Ingresa email para registrar');
+      if (!email) return alert('Email requerido');
+      try {
+        const res = await fetch('/api/users', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: email.trim().toLowerCase() }),
+        });
+        const data = await res.json();
+        if (res.ok) {
+          alert('Usuario registrado. Ahora inicia sesión.');
+        } else {
+          alert(data.error || 'Error al registrar usuario');
+        }
+      } catch {
+        alert('Error en el servidor');
+      }
+    };
+
+    // Logout usuario
+    btnLogout.onclick = () => {
+      usuarioActual = null;
+      usuarioActualP.textContent = '';
+      formLogin.style.display = 'block';
+      btnRegistrarUsuario.style.display = 'inline-block';
+      btnLogout.style.display = 'none';
+    };
+
+    // Cargar apartados
+    async function cargarApartados() {
+      try {
+        const res = await fetch('/api/apartados');
+        apartados = await res.json();
+        mostrarApartados();
+      } catch {
+        apartados = [];
+        apartadosLista.innerHTML = '<p>Error cargando apartados</p>';
+      }
+    }
+
+    // Mostrar apartados
+    function mostrarApartados() {
+      apartadosLista.innerHTML = '';
+      if (apartados.length === 0) {
+        apartadosLista.innerHTML = '<p>No hay apartados.</p>';
+        return;
+      }
+      apartados.forEach(a => {
+        const div = document.createElement('div');
+        div.className = 'apartado-item';
+        div.innerHTML = `
+          <div><strong>${a.nombre}</strong> | Total: $${a.total.toFixed(2)} | Abonado: $${a.abonado.toFixed(2)} | Días restantes: ${a.diasRestantes}</div>
+          <button data-id="${a.id}">Eliminar</button>
+        `;
+        apartadosLista.appendChild(div);
+      });
+      // Botones eliminar
+      apartadosLista.querySelectorAll('button').forEach(btn => {
+        btn.onclick = async () => {
+          const id = btn.dataset.id;
+          if (!confirm('Eliminar apartado?')) return;
+          try {
+            const res = await fetch('/api/apartados/' + id, { method: 'DELETE' });
+            if (!res.ok) throw new Error('Error eliminando');
+            apartados = apartados.filter(a => a.id !== id);
+            mostrarApartados();
+          } catch {
+            alert('Error eliminando apartado');
+          }
+        };
+      });
+    }
+
+    // Agregar apartado
+    formApartado.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!usuarioActual) return alert('Debes iniciar sesión para agregar apartado');
+      const nombre = document.getElementById('apartado-nombre').value.trim();
+      const total = parseFloat(document.getElementById('apartado-total').value);
+      const abonado = parseFloat(document.getElementById('apartado-abonado').value);
+      const dias = parseInt(document.getElementById('apartado-dias').value, 10);
+      if (!nombre || isNaN(total) || isNaN(abonado) || isNaN(dias)) return alert('Datos inválidos');
+      try {
+        const res = await fetch('/api/apartados', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nombre, total, abonado, diasRestantes: dias }),
+        });
+        if (!res.ok) throw new Error('Error al agregar apartado');
+        const nuevo = await res.json();
+        apartados.push(nuevo);
+        mostrarApartados();
+        formApartado.reset();
+      } catch {
+        alert('Error agregando apartado');
+      }
+    });
+
+    // Importar Excel (simulación aquí)
+    formExcel.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fileInput = document.getElementById('archivo-excel');
+      if (!fileInput.files.length) return alert('Selecciona un archivo');
+      // Aquí iría lógica para leer Excel (usando SheetJS por ejemplo)
+      // Por simplicidad simulamos importación
+      resultadoExcel.textContent = 'Archivo importado correctamente (simulado).';
+    });
+
+    // Cargar promociones
+    async function cargarPromociones() {
+      try {
+        const res = await fetch('/api/promociones');
+        promociones = await res.json();
+        mostrarPromociones();
+      } catch {
+        promociones = [];
+        listaPromociones.innerHTML = '<p>Error cargando promociones</p>';
+      }
+    }
+
+    // Mostrar promociones
+    function mostrarPromociones() {
+      listaPromociones.innerHTML = '';
+      if (promociones.length === 0) {
+        listaPromociones.innerHTML = '<p>No hay promociones.</p>';
+        return;
+      }
+      promociones.forEach(p => {
+        const li = document.createElement('li');
+        li.className = 'promocion-item';
+        li.textContent = `${p.productoTitle} - ${p.tipo === 'porcentaje' ? p.valor + '%' : '$' + p.valor} - ${p.descripcion || ''}`;
+        listaPromociones.appendChild(li);
+      });
+    }
+
+    // Actualizar select productos para promociones
+    function actualizarPromoProductoSelect() {
+      promoProductoSelect.innerHTML = '<option value="">Selecciona producto</option>';
+      productos.forEach(p => {
+        promoProductoSelect.innerHTML += `<option value="${p.id}">${p.title}</option>`;
+      });
+    }
+
+    // Agregar promoción
+    formPromocion.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const idProducto = promoProductoSelect.value;
+      const tipo = promoTipoSelect.value;
+      const valor = parseFloat(promoValorInput.value);
+      const descripcion = promoDescripcionTextarea.value.trim();
+      if (!idProducto || !tipo || isNaN(valor)) return alert('Datos inválidos');
+      try {
+        const producto = productos.find(p => p.id === idProducto);
+        const res = await fetch('/api/promociones', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            productoId: idProducto,
+            productoTitle: producto ? producto.title : '',
+            tipo,
+            valor,
+            descripcion
+          }),
+        });
+        if (!res.ok) throw new Error('Error al agregar promoción');
+        promoProductoSelect.value = '';
+        promoTipoSelect.value = '';
+        promoValorInput.value = '';
+        promoDescripcionTextarea.value = '';
+        await cargarPromociones();
+      } catch {
+        alert('Error agregando promoción');
+      }
+    });
+
+    // Aplicar promociones al carrito (en frontend, se puede mejorar)
+    function aplicarPromocionesAlCarrito() {
+      carrito.forEach(item => {
+        // Buscar promoción para el producto
+        const promo = promociones.find(p => p.productoId === item.id);
+        if (!promo) return;
+        if (promo.tipo === 'porcentaje') {
+          item.price = item.price * (1 - promo.valor / 100);
+        } else if (promo.tipo === 'cantidad') {
+          item.price = item.price - promo.valor;
+          if (item.price < 0) item.price = 0;
+        }
+      });
+    }
+
+    // Corte de caja: mostrar resumen de ventas y apartados
+    async function cargarCorte() {
+      try {
+        const resVentas = await fetch('/api/ventas');
+        const ventas = await resVentas.json();
+        const resApartados = await fetch('/api/apartados');
+        const apartadosRes = await resApartados.json();
+
+        let totalVentas = 0;
+        ventas.forEach(v => {
+          v.carrito.forEach(item => {
+            totalVentas += item.price * item.quantity;
+          });
+        });
+
+        let totalApartados = 0;
+        apartadosRes.forEach(a => {
+          totalApartados += a.abonado;
+        });
+
+        seccionCorte.innerHTML = `
+          <h2>Corte de Caja</h2>
+          <p>Total ventas: $${totalVentas.toFixed(2)}</p>
+          <p>Total abonado en apartados: $${totalApartados.toFixed(2)}</p>
+          <button id="btn-exportar-corte" class="btn-pagar">Exportar a Excel</button>
+          <div id="resultado-corte" style="margin-top:15px; color:green;"></div>
+        `;
+
+        document.getElementById('btn-exportar-corte').onclick = () => {
+          alert('Función de exportar no implementada (debe hacerse con backend o librería)');
+        };
+
+      } catch {
+        seccionCorte.innerHTML = '<p>Error cargando corte de caja</p>';
+      }
+    }
+
+    // Inicialización
+    async function init() {
+      await cargarProductos();
+      await cargarUsuarios();
+      await cargarApartados();
+      await cargarPromociones();
+      mostrarSeccion('productos');
+      actualizarCarrito();
+      cargarCorte();
+    }
+
+    init();
+  </script>
+</body>
+</html>
+

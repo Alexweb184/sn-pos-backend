@@ -1,0 +1,11 @@
+[
+  {
+    "id": 1,
+    "nombre": "alex",
+    "abono": 1350,
+    "total": 2700,
+    "diasRestantes": 30,
+    "fechaLimite": "2025-08-05T05:57:24.980Z",
+    "pagado": false
+  }
+]

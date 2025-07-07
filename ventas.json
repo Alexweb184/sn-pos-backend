@@ -1,0 +1,144 @@
+[
+  {
+    "id": "1751872200475",
+    "carrito": [
+      {
+        "id": "8960014975209",
+        "title": "9PM",
+        "price": 990,
+        "quantity": 1
+      },
+      {
+        "id": "8960010191081",
+        "title": "9AM Woman 100ml",
+        "price": 999,
+        "quantity": 1
+      },
+      {
+        "id": "8960010715369",
+        "title": "9AM dive caballero 100ml",
+        "price": 990,
+        "quantity": 1
+      }
+    ],
+    "metodoPago": "efectivo",
+    "esApartado": false,
+    "fecha": "2025-07-07T07:10:00.451Z"
+  },
+  {
+    "id": "1751872597340",
+    "carrito": [
+      {
+        "id": "8960011239657",
+        "title": "9AM Coral Fantasy",
+        "price": 1050,
+        "quantity": 1
+      }
+    ],
+    "metodoPago": "apartado",
+    "esApartado": true,
+    "fecha": "2025-07-07T07:16:37.338Z"
+  },
+  {
+    "id": "1751872610751",
+    "carrito": [
+      {
+        "id": "8960018350313",
+        "title": "9PM Rebel",
+        "price": 1050,
+        "quantity": 1
+      }
+    ],
+    "metodoPago": "apartado",
+    "esApartado": true,
+    "fecha": "2025-07-07T07:16:50.749Z"
+  },
+  {
+    "id": "1751872846789",
+    "carrito": [
+      {
+        "id": "8960011239657",
+        "title": "9AM Coral Fantasy",
+        "price": 1050,
+        "quantity": 1
+      },
+      {
+        "id": "8960010715369",
+        "title": "9AM dive caballero 100ml",
+        "price": 990,
+        "quantity": 1
+      }
+    ],
+    "metodoPago": "apartado",
+    "esApartado": true,
+    "fecha": "2025-07-07T07:20:46.780Z"
+  },
+  {
+    "id": "1751876081018",
+    "carrito": [
+      {
+        "id": "8960010715369",
+        "title": "9AM dive caballero 100ml",
+        "price": 990,
+        "quantity": 1
+      },
+      {
+        "id": "8960010191081",
+        "title": "9AM Woman 100ml",
+        "price": 999,
+        "quantity": 1
+      }
+    ],
+    "metodoPago": "apartado",
+    "esApartado": true,
+    "fecha": "2025-07-07T08:14:41.018Z"
+  },
+  {
+    "id": "1751878564790",
+    "carrito": [
+      {
+        "id": "8968502903017",
+        "title": "hayaati set",
+        "price": 1300,
+        "quantity": 1
+      },
+      {
+        "id": "8968497922281",
+        "title": "Lataffa al maleky hayaati",
+        "price": 900,
+        "quantity": 1
+      }
+    ],
+    "metodoPago": "apartado",
+    "esApartado": true,
+    "fecha": "2025-07-07T08:56:04.790Z"
+  },
+  {
+    "id": "1751878578097",
+    "carrito": [
+      {
+        "id": "8968502903017",
+        "title": "hayaati set",
+        "price": 1300,
+        "quantity": 1
+      }
+    ],
+    "metodoPago": "efectivo",
+    "esApartado": false,
+    "fecha": "2025-07-07T08:56:18.097Z"
+  },
+  {
+    "id": "1751878586424",
+    "carrito": [
+      {
+        "id": "8968502903017",
+        "title": "hayaati set",
+        "price": 1300,
+        "quantity": 1
+      }
+    ],
+    "metodoPago": "tarjeta",
+    "esApartado": false,
+    "fecha": "2025-07-07T08:56:26.424Z"
+  }
+]
