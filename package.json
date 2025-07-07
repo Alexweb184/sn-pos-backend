@@ -47,6 +47,7 @@
     "debug": "^4.4.1",
     "delayed-stream": "^1.0.0",
     "depd": "^2.0.0",
+    "dotenv": "^17.0.1",
     "dunder-proto": "^1.0.1",
     "duplexer2": "^0.1.4",
     "ee-first": "^1.1.1",

@@ -1,3 +1,6 @@
+require('dotenv').config();
+
+const SHOPIFY_TOKEN = process.env.SHOPIFY_TOKEN;
 const express = require('express');
 const cors = require('cors');
 const fs = require('fs');
