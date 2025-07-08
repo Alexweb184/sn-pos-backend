@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -51,6 +52,7 @@
       <button onclick="mostrarSeccion('excel')">Importar Excel</button>
       <button onclick="mostrarSeccion('promociones')">Promociones</button>
       <button onclick="mostrarSeccion('corte')">Corte de Caja</button>
+      <button onclick="agregarProductoLibre()">Agregar producto libre</button>
     </nav>
   </header>
 
@@ -152,6 +154,27 @@
   </main>
 
   <script>
+function agregarProductoLibre() {
+  const nombre = prompt("Nombre del producto:");
+  if (!nombre) return;
+
+  const precioStr = prompt("Precio del producto:");
+  const precio = parseFloat(precioStr);
+
+  if (isNaN(precio)) {
+    alert("Precio inválido");
+    return;
+  }
+
+  const producto = {
+    id: Date.now(), // ID único
+    nombre,
+    precio,
+    cantidad: 1
+  };
+
+  agregarAlCarrito(producto);
+}
     // Variables globales
     let productos = [];
     let carrito = [];
@@ -694,10 +717,46 @@
           <div id="resultado-corte" style="margin-top:15px; color:green;"></div>
         `;
 
-        document.getElementById('btn-exportar-corte').onclick = () => {
-          alert('Función de exportar no implementada (debe hacerse con backend o librería)');
-        };
+document.addEventListener('click', function(e) {
+  if (e.target && e.target.id === 'btn-exportar-corte') {
+    exportarCorteExcel();
+  }
+});
 
+function exportarCorteExcel() {
+  fetch('https://sn-pos-backend.onrender.com/api/ventas')
+    .then(res => res.json())
+    .then(ventas => {
+      const data = ventas.map(v => {
+        const fecha = new Date(v.fecha).toLocaleString();
+        const metodo = v.metodoPago;
+        const productosTexto = v.carrito.map(item => `${item.title} x${item.quantity}`).join(', ');
+        const total = v.carrito.reduce((sum, item) => sum + item.price * item.quantity, 0);
+        const usuario = v.usuario || 'Desconocido';
+        const esApartado = v.esApartado ? 'Sí' : 'No';
+        const abonado = v.esApartado && v.apartadoInfo?.abonado ? `$${v.apartadoInfo.abonado.toFixed(2)}` : '-';
+
+        return {
+          Fecha: fecha,
+          Usuario: usuario,
+          Metodo: metodo,
+          Productos: productosTexto,
+          'Es Apartado': esApartado,
+          Abonado: abonado,
+          Total: `$${total.toFixed(2)}`
+        };
+      });
+
+      const worksheet = XLSX.utils.json_to_sheet(data);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "CorteCaja");
+
+      XLSX.writeFile(workbook, "corte_de_caja.xlsx");
+    })
+    .catch(() => {
+      alert('Error exportando a Excel');
+    });
+}
       } catch {
         seccionCorte.innerHTML = '<p>Error cargando corte de caja</p>';
       }
