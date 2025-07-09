@@ -40,9 +40,143 @@
     #btn-buscar { width: 30px; height: 30px; margin-left: 5px; vertical-align: middle; cursor: pointer; }
     .flex-row { display: flex; gap: 10px; flex-wrap: wrap; }
     .flex-row > * { flex: 1; min-width: 120px; }
+/* Estilos para los cuadros de corte de caja */
+.corte-cuadro {
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 20px;
+  color: white;
+}
+
+.corte-morado {
+  background-color: #6a1b9a; /* morado */
+}
+
+.corte-celeste {
+  background-color: #29b6f6; /* celeste */
+}
+
+.corte-verde {
+  background-color: #43a047; /* verde */
+}
+
+.corte-azul {
+  background-color: #1e88e5; /* azul */
+}
+
+.corte-cuadro h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-weight: bold;
+  font-size: 1.3em;
+}
+
+.corte-cuadro ul {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+.corte-cuadro ul li {
+  padding: 5px 0;
+  font-size: 1.1em;
+}
   </style>
 </head>
 <body>
+<!-- Sección Corte de Caja -->
+<section id="corte" class="seccion">
+  <h2>Corte de Caja</h2>
+
+  <!-- Bloque Morado: Entrada de efectivo -->
+  <div class="corte-bloque morado">
+    <h3>Entrada de Efectivo</h3>
+    <p><strong>Cambio:</strong> $<span id="cambio-valor">0.00</span></p>
+    <p><strong>Dinero Inicial en Caja:</strong> $<span id="dinero-inicial">0.00</span></p>
+  </div>
+
+  <!-- Bloque Celeste: Dinero en caja -->
+  <div class="corte-bloque celeste">
+    <h3>Dinero en Caja</h3>
+    <p><strong>Ventas en efectivo:</strong> $<span id="ventas-efectivo">0.00</span></p>
+    <p><strong>Entradas:</strong> $<span id="entradas-caja">0.00</span></p>
+    <p><strong>Pagos a proveedores:</strong> $<span id="pagos-proveedores">0.00</span></p>
+  </div>
+
+  <!-- Bloque Verde: Pagos de contado -->
+  <div class="corte-bloque verde">
+    <h3>Pagos de Contado</h3>
+    <p><strong>Efectivo:</strong> $<span id="pagos-contado-efectivo">0.00</span></p>
+  </div>
+
+  <!-- Bloque Azul: Venta de departamento -->
+  <div class="corte-bloque azul">
+    <h3>Venta de Departamento</h3>
+    <p><strong>Artículos comunes:</strong> $<span id="venta-articulos-comunes">0.00</span></p>
+    <p><strong>Departamento:</strong> $<span id="venta-departamento">0.00</span></p>
+  </div>
+
+  <hr />
+
+  <!-- Resumen final del corte -->
+  <div class="corte-resumen">
+    <p><strong>Pagos de clientes:</strong> $<span id="pagos-clientes">0.00</span></p>
+    <p><strong>Pagos de proveedores:</strong> $<span id="pagos-proveedores-total">0.00</span></p>
+    <p><strong>Ventas totales:</strong> $<span id="ventas-totales">0.00</span></p>
+    <p><strong>Ganancia:</strong> $<span id="ganancia">0.00</span></p>
+  </div>
+
+  <!-- Botón para exportar el corte a Excel -->
+  <button id="btn-exportar-corte" class="btn-pagar">Exportar a Excel</button>
+  
+  <!-- Mensaje de resultado para exportar -->
+  <div id="resultado-corte" style="margin-top:15px; color:green;"></div>
+</section>
+
+<!-- Estilos CSS para los bloques y texto -->
+<style>
+  /* Estilos generales para los bloques de corte */
+  .corte-bloque {
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    color: white;
+  }
+
+  /* Colores de fondo según cada apartado */
+  .morado { background-color: #7b3fa6; }
+  .celeste { background-color: #4da6ff; }
+  .verde { background-color: #4caf50; }
+  .azul { background-color: #2196f3; }
+
+  /* Estilo para el resumen final */
+  .corte-resumen p {
+    font-weight: bold;
+    font-size: 1.1em;
+  }
+
+  /* Estilo para el botón */
+  .btn-pagar {
+    background-color: #222;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 6px;
+    font-size: 1em;
+    transition: background-color 0.3s ease;
+  }
+
+  .btn-pagar:hover {
+    background-color: #555;
+  }
+
+  /* Para separar la sección con una línea */
+  hr {
+    border: none;
+    border-top: 1px solid #ccc;
+    margin: 20px 0;
+  }
+</style>
   <header>
     <img src="https://cdn.shopify.com/s/files/1/0750/9042/8137/files/IMG_4920.jpg?v=1749940220" alt="Logo" />
     <nav>
@@ -53,6 +187,7 @@
       <button onclick="mostrarSeccion('promociones')">Promociones</button>
       <button onclick="mostrarSeccion('corte')">Corte de Caja</button>
       <button onclick="agregarProductoLibre()">Agregar producto libre</button>
+      <button onclick="mostrarSeccion('nuevo-producto')">Nuevo Producto</button>
     </nav>
   </header>
 
@@ -129,6 +264,43 @@
       <div id="resultado-corte" style="margin-top:15px; color:green;"></div>
     </section>
 
+<!-- NUEVO PRODUCTO -->
+<section id="nuevo-producto" class="seccion">
+  <h2>Agregar Nuevo Producto</h2>
+  <form id="form-nuevo-producto">
+    <label>Código de barras:</label>
+    <input type="text" id="np-codigo" placeholder="Escanear o escribir código" required />
+
+    <label>Nombre o descripción:</label>
+    <input type="text" id="np-nombre" required />
+
+    <label>Precio costo:</label>
+    <input type="number" id="np-costo" min="0" step="0.01" required />
+
+    <label>Precio venta:</label>
+    <input type="number" id="np-venta" min="0" step="0.01" required />
+
+    <label>Precio mayoreo:</label>
+    <input type="number" id="np-mayoreo" min="0" step="0.01" />
+
+    <label>Departamento:</label>
+    <select id="np-departamento" required>
+      <option value="perfume">Perfume</option>
+      <option value="producto">Producto libre</option>
+    </select>
+
+    <label>Cantidad actual en inventario:</label>
+    <input type="number" id="np-inventario" min="0" required />
+
+    <label>Mínimo en inventario:</label>
+    <input type="number" id="np-minimo" min="0" required />
+
+    <button type="submit">Guardar Producto</button>
+  </form>
+  <div id="nuevo-producto-resultado" style="margin-top:10px;"></div>
+</section>
+
+
     <!-- CARRITO -->
     <aside id="carrito">
       <button id="btn-toggle-carrito" title="Mostrar/Ocultar carrito">➡️</button>
@@ -153,7 +325,6 @@
     </aside>
   </main>
 
-  <script>
 function agregarProductoLibre() {
   const nombre = prompt("Nombre del producto:");
   if (!nombre) return;
@@ -689,91 +860,124 @@ function agregarProductoLibre() {
       });
     }
 
-    // Corte de caja: mostrar resumen de ventas y apartados
-    async function cargarCorte() {
-      try {
-        const resVentas = await fetch('https://sn-pos-backend.onrender.com/api/ventas');
-        const ventas = await resVentas.json();
-        const resApartados = await fetch('/api/apartados');
-        const apartadosRes = await resApartados.json();
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+  // Exportar corte de caja a Excel
+  document.addEventListener('click', function(e) {
+    if (e.target && e.target.id === 'btn-exportar-corte') {
+      exportarCorteExcel();
+    }
+  });
 
-        let totalVentas = 0;
-        ventas.forEach(v => {
-          v.carrito.forEach(item => {
-            totalVentas += item.price * item.quantity;
-          });
+  function exportarCorteExcel() {
+    fetch('https://sn-pos-backend.onrender.com/api/ventas')
+      .then(res => res.json())
+      .then(ventas => {
+        const data = ventas.map(v => {
+          const fecha = new Date(v.fecha).toLocaleString();
+          const metodo = v.metodoPago;
+          const productosTexto = v.carrito.map(item => `${item.title} x${item.quantity}`).join(', ');
+          const total = v.carrito.reduce((sum, item) => sum + item.price * item.quantity, 0);
+          const usuario = v.usuario || 'Desconocido';
+          const esApartado = v.esApartado ? 'Sí' : 'No';
+          const abonado = v.esApartado && v.apartadoInfo?.abonado ? `$${v.apartadoInfo.abonado.toFixed(2)}` : '-';
+
+          return {
+            Fecha: fecha,
+            Usuario: usuario,
+            Metodo: metodo,
+            Productos: productosTexto,
+            'Es Apartado': esApartado,
+            Abonado: abonado,
+            Total: `$${total.toFixed(2)}`
+          };
         });
 
-        let totalApartados = 0;
-        apartadosRes.forEach(a => {
-          totalApartados += a.abonado;
-        });
+        const worksheet = XLSX.utils.json_to_sheet(data);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "CorteCaja");
 
-        seccionCorte.innerHTML = `
-          <h2>Corte de Caja</h2>
-          <p>Total ventas: $${totalVentas.toFixed(2)}</p>
-          <p>Total abonado en apartados: $${totalApartados.toFixed(2)}</p>
-          <button id="btn-exportar-corte" class="btn-pagar">Exportar a Excel</button>
-          <div id="resultado-corte" style="margin-top:15px; color:green;"></div>
-        `;
-
-document.addEventListener('click', function(e) {
-  if (e.target && e.target.id === 'btn-exportar-corte') {
-    exportarCorteExcel();
-  }
-});
-
-function exportarCorteExcel() {
-  fetch('https://sn-pos-backend.onrender.com/api/ventas')
-    .then(res => res.json())
-    .then(ventas => {
-      const data = ventas.map(v => {
-        const fecha = new Date(v.fecha).toLocaleString();
-        const metodo = v.metodoPago;
-        const productosTexto = v.carrito.map(item => `${item.title} x${item.quantity}`).join(', ');
-        const total = v.carrito.reduce((sum, item) => sum + item.price * item.quantity, 0);
-        const usuario = v.usuario || 'Desconocido';
-        const esApartado = v.esApartado ? 'Sí' : 'No';
-        const abonado = v.esApartado && v.apartadoInfo?.abonado ? `$${v.apartadoInfo.abonado.toFixed(2)}` : '-';
-
-        return {
-          Fecha: fecha,
-          Usuario: usuario,
-          Metodo: metodo,
-          Productos: productosTexto,
-          'Es Apartado': esApartado,
-          Abonado: abonado,
-          Total: `$${total.toFixed(2)}`
-        };
+        XLSX.writeFile(workbook, "corte_de_caja.xlsx");
+      })
+      .catch(() => {
+        alert('Error exportando a Excel');
       });
+  }
 
-      const worksheet = XLSX.utils.json_to_sheet(data);
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "CorteCaja");
+  // Funciones para cargar datos iniciales - debes definir estas funciones
+  async function cargarProductos() {
+    // código para cargar productos desde backend o localStorage
+  }
+  async function cargarUsuarios() {
+    // código para cargar usuarios
+  }
+  async function cargarApartados() {
+    // código para cargar apartados
+  }
+  async function cargarPromociones() {
+    // código para cargar promociones
+  }
+  async function cargarCorte() {
+    // código para mostrar corte de caja
+  }
 
-      XLSX.writeFile(workbook, "corte_de_caja.xlsx");
-    })
-    .catch(() => {
-      alert('Error exportando a Excel');
-    });
-}
-      } catch {
-        seccionCorte.innerHTML = '<p>Error cargando corte de caja</p>';
-      }
+  // Mostrar sección en la UI - debes definirla
+  function mostrarSeccion(nombre) {
+    // muestra la sección indicada
+  }
+
+  // Actualizar carrito - debes definirla
+  function actualizarCarrito() {
+    // actualiza la vista del carrito
+  }
+
+  // Inicialización general al cargar la página
+  async function init() {
+    await cargarProductos();
+    await cargarUsuarios();
+    await cargarApartados();
+    await cargarPromociones();
+    mostrarSeccion('productos');
+    actualizarCarrito();
+    await cargarCorte();
+  }
+
+  // Guardar nuevo producto manual
+  document.getElementById('form-nuevo-producto').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const nuevo = {
+      codigo: document.getElementById('np-codigo').value.trim(),
+      nombre: document.getElementById('np-nombre').value.trim(),
+      costo: parseFloat(document.getElementById('np-costo').value),
+      venta: parseFloat(document.getElementById('np-venta').value),
+      mayoreo: parseFloat(document.getElementById('np-mayoreo').value),
+      departamento: document.getElementById('np-departamento').value,
+      inventario: parseInt(document.getElementById('np-inventario').value),
+      minimo: parseInt(document.getElementById('np-minimo').value),
+    };
+
+    if (!nuevo.codigo || !nuevo.nombre || isNaN(nuevo.venta) || isNaN(nuevo.costo)) {
+      return alert('Todos los campos son obligatorios y deben ser válidos.');
     }
 
-    // Inicialización
-    async function init() {
-      await cargarProductos();
-      await cargarUsuarios();
-      await cargarApartados();
-      await cargarPromociones();
-      mostrarSeccion('productos');
-      actualizarCarrito();
-      cargarCorte();
+    try {
+      const res = await fetch('/api/productos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(nuevo)
+      });
+      if (!res.ok) throw new Error('Error al guardar');
+      document.getElementById('nuevo-producto-resultado').textContent = 'Producto guardado correctamente.';
+      document.getElementById('form-nuevo-producto').reset();
+      await cargarProductos(); // recargar productos para actualizar la UI
+    } catch (err) {
+      document.getElementById('nuevo-producto-resultado').textContent = 'Error al guardar producto.';
     }
+  });
 
-    init();
+  // Llama a init para arrancar la app
+  init();
+</script>
   </script>
 </body>
 </html>
