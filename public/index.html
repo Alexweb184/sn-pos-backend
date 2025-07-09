@@ -260,6 +260,7 @@
     <!-- CORTE DE CAJA -->
     <section id="corte" class="seccion">
       <h2>Corte de Caja</h2>
+      <div id="lista-corte"></div>
       <button id="btn-exportar-corte" class="btn-pagar">Exportar a Excel</button>
       <div id="resultado-corte" style="margin-top:15px; color:green;"></div>
     </section>
@@ -440,7 +441,6 @@ function agregarAlCarrito(productoOId) {
       } catch (err) {
         productosLista.innerHTML = '<p>Error cargando productos</p>';
       }
-    }
 
     // Mostrar productos en lista
     function mostrarProductos(lista) {
@@ -677,7 +677,6 @@ function agregarAlCarrito(productoOId) {
       } catch {
         usuarios = [];
       }
-    }
 
     // Login usuario
     formLogin.addEventListener('submit', async (e) => {
@@ -746,7 +745,6 @@ function agregarAlCarrito(productoOId) {
         apartados = [];
         apartadosLista.innerHTML = '<p>Error cargando apartados</p>';
       }
-    }
 
     // Mostrar apartados
     function mostrarApartados() {
@@ -826,7 +824,7 @@ function agregarAlCarrito(productoOId) {
         promociones = [];
         listaPromociones.innerHTML = '<p>Error cargando promociones</p>';
       }
-    }
+     }
 
     // Mostrar promociones
     function mostrarPromociones() {
@@ -897,6 +895,7 @@ function agregarAlCarrito(productoOId) {
         }
       });
     }
+   }
 
    // Exportar corte de caja a Excel
 document.addEventListener('click', function(e) {
@@ -976,6 +975,7 @@ function mostrarProductos() {
   actualizarPromoProductoSelect(); // para que aparezcan en el selector de promociones
 }
 }
+
 // Cargar usuarios
 async function cargarUsuarios() {
   try {
@@ -1008,7 +1008,6 @@ function mostrarUsuarios() {
   });
 }
 
-}
 async function cargarApartados() {
   try {
     const res = await fetch('https://sn-pos-backend.onrender.com/api/apartados');
@@ -1042,7 +1041,6 @@ function mostrarApartados() {
     `;
     contenedor.appendChild(div);
   });
-}
 }
 // Cargar promociones
 async function cargarPromociones() {
@@ -1114,7 +1112,6 @@ function mostrarCorte() {
     contenedor.appendChild(div);
   });
 }
-}
 
 // Mostrar sección en la UI - debes definirla
 function mostrarSeccion(nombre) {
@@ -1148,7 +1145,6 @@ function actualizarCarrito() {
     `;
     contenedor.appendChild(div);
   });
-}
 }
 
 // Inicialización general al cargar la página
