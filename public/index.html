@@ -325,7 +325,8 @@
     </aside>
   </main>
 
-function agregarProductoLibre() {
+  <script>
+  function agregarProductoLibre() {
   const nombre = prompt("Nombre del producto:");
   if (!nombre) return;
 
@@ -343,8 +344,45 @@ function agregarProductoLibre() {
     precio,
     cantidad: 1
   };
-
+ 
   agregarAlCarrito(producto);
+}
+function agregarAlCarrito(productoOId) {
+  let productoParaAgregar;
+
+  // Si es un objeto con propiedad 'id' y 'precio' (producto libre o completo)
+  if (typeof productoOId === 'object' && productoOId !== null) {
+    productoParaAgregar = {
+      id: productoOId.id.toString(),
+      title: productoOId.nombre || productoOId.title || 'Producto libre',
+      price: productoOId.precio || productoOId.price || 0,
+      quantity: productoOId.cantidad || productoOId.quantity || 1
+    };
+  } else {
+    // Si es un ID, buscar producto en lista
+    const productoBuscado = productos.find(p => p.id.toString() === productoOId.toString());
+    if (!productoBuscado) {
+      alert('Producto no encontrado');
+      return;
+    }
+    const price = preciosMayoreoActivado && productoBuscado.variants[0].precioMayoreo ? productoBuscado.variants[0].precioMayoreo : productoBuscado.variants[0].price;
+    productoParaAgregar = {
+      id: productoBuscado.id.toString(),
+      title: productoBuscado.title,
+      price: price,
+      quantity: 1
+    };
+  }
+
+  // Revisar si el producto ya está en el carrito
+  const index = carrito.findIndex(item => item.id === productoParaAgregar.id);
+  if (index === -1) {
+    carrito.push(productoParaAgregar);
+  } else {
+    carrito[index].quantity++;
+  }
+
+  actualizarCarrito(); // función que debes tener para refrescar el carrito visualmente
 }
     // Variables globales
     let productos = [];
@@ -904,29 +942,213 @@ function exportarCorteExcel() {
 
 // Funciones para cargar datos iniciales - debes completar según tu backend
 async function cargarProductos() {
-  // código para cargar productos desde backend o localStorage
+  try {
+    const res = await fetch('https://sn-pos-backend.onrender.com/api/products');
+    productos = await res.json();
+  } catch {
+    productos = [];
+  }
+  mostrarProductos(); // <- muestra los productos en la interfaz
 }
+
+// Mostrar productos en la interfaz
+function mostrarProductos() {
+  const contenedor = document.getElementById('lista-productos');
+  if (!contenedor) return;
+
+  contenedor.innerHTML = '';
+  if (productos.length === 0) {
+    contenedor.innerHTML = '<p>No hay productos disponibles.</p>';
+    return;
+  }
+
+  productos.forEach(p => {
+    const div = document.createElement('div');
+    div.className = 'producto-item';
+    div.innerHTML = `
+      <p><strong>${p.title || p.nombre}</strong></p>
+      <p>Precio: $${p.price || p.venta}</p>
+      <button onclick="agregarAlCarrito('${p.id}')">Agregar</button>
+    `;
+    contenedor.appendChild(div);
+  });
+
+  actualizarPromoProductoSelect(); // para que aparezcan en el selector de promociones
+}
+}
+// Cargar usuarios
 async function cargarUsuarios() {
-  // código para cargar usuarios
+  try {
+    const res = await fetch('https://sn-pos-backend.onrender.com/api/users');
+    usuarios = await res.json();
+  } catch {
+    usuarios = [];
+  }
+  mostrarUsuarios(); // Llama a mostrar para actualizar UI
+}
+
+// Mostrar usuarios
+function mostrarUsuarios() {
+  const contenedor = document.getElementById('lista-usuarios');
+  if (!contenedor) return;
+
+  contenedor.innerHTML = '';
+  if (usuarios.length === 0) {
+    contenedor.innerHTML = '<p>No hay usuarios.</p>';
+    return;
+  }
+
+  usuarios.forEach(u => {
+    const div = document.createElement('div');
+    div.className = 'usuario-item';
+    div.innerHTML = `
+      <p><strong>${u.nombre || u.name || u.email}</strong> - ${u.email || ''}</p>
+    `;
+    contenedor.appendChild(div);
+  });
+}
+
 }
 async function cargarApartados() {
-  // código para cargar apartados
+  try {
+    const res = await fetch('https://sn-pos-backend.onrender.com/api/apartados');
+    apartados = await res.json();
+  } catch {
+    apartados = [];
+  }
+  mostrarApartados();
 }
+
+// Mostrar apartados
+function mostrarApartados() {
+  const contenedor = document.getElementById('lista-apartados');
+  if (!contenedor) return;
+
+  contenedor.innerHTML = '';
+  if (apartados.length === 0) {
+    contenedor.innerHTML = '<p>No hay apartados.</p>';
+    return;
+  }
+
+  apartados.forEach(a => {
+    const diasRest = a.diasRestantes ?? a.dias || 0;
+    const div = document.createElement('div');
+    div.className = 'apartado-item';
+    div.innerHTML = `
+      <p><strong>${a.nombre || a.cliente}</strong></p>
+      <p>Total: $${a.total?.toFixed(2) || 0}</p>
+      <p>Abonado: $${a.abonado?.toFixed(2) || 0}</p>
+      <p>Días restantes: ${diasRest}</p>
+    `;
+    contenedor.appendChild(div);
+  });
+}
+}
+// Cargar promociones
 async function cargarPromociones() {
-  // código para cargar promociones
+  try {
+    const res = await fetch('https://sn-pos-backend.onrender.com/api/promociones');
+    promociones = await res.json();
+  } catch {
+    promociones = [];
+  }
+  mostrarPromociones();
+}
+
+// Mostrar promociones
+function mostrarPromociones() {
+  const contenedor = document.getElementById('lista-promociones');
+  if (!contenedor) return;
+
+  contenedor.innerHTML = '';
+  if (promociones.length === 0) {
+    contenedor.innerHTML = '<p>No hay promociones.</p>';
+    return;
+  }
+
+  promociones.forEach(p => {
+    const li = document.createElement('li');
+    li.className = 'promocion-item';
+    li.textContent = `${p.productoTitle} - ${p.tipo === 'porcentaje' ? p.valor + '%' : '$' + p.valor} - ${p.descripcion || ''}`;
+    contenedor.appendChild(li);
+  });
+}
 }
 async function cargarCorte() {
-  // código para mostrar corte de caja
+  try {
+    const res = await fetch('https://sn-pos-backend.onrender.com/api/ventas');
+    corte = await res.json();
+  } catch {
+    corte = [];
+  }
+  mostrarCorte();
+}
+
+// Mostrar corte
+function mostrarCorte() {
+  const contenedor = document.getElementById('lista-corte');
+  if (!contenedor) return;
+
+  contenedor.innerHTML = '';
+  if (corte.length === 0) {
+    contenedor.innerHTML = '<p>No hay ventas para el corte.</p>';
+    return;
+  }
+
+  corte.forEach(v => {
+    const fecha = new Date(v.fecha).toLocaleString();
+    const total = v.carrito.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const esApartado = v.esApartado ? 'Sí' : 'No';
+
+    const div = document.createElement('div');
+    div.className = 'venta-item';
+    div.innerHTML = `
+      <p><strong>Fecha:</strong> ${fecha}</p>
+      <p><strong>Usuario:</strong> ${v.usuario || 'Desconocido'}</p>
+      <p><strong>Método de pago:</strong> ${v.metodoPago || 'N/A'}</p>
+      <p><strong>Productos:</strong> ${v.carrito.map(i => `${i.title} x${i.quantity}`).join(', ')}</p>
+      <p><strong>Es apartado:</strong> ${esApartado}</p>
+      <p><strong>Total:</strong> $${total.toFixed(2)}</p>
+      <hr>
+    `;
+    contenedor.appendChild(div);
+  });
+}
 }
 
 // Mostrar sección en la UI - debes definirla
 function mostrarSeccion(nombre) {
-  // muestra la sección indicada
+  const secciones = document.querySelectorAll('.seccion');
+  secciones.forEach(sec => {
+    if (sec.id === `seccion-${nombre}`) {
+      sec.style.display = 'block';
+    } else {
+      sec.style.display = 'none';
+    }
+  });
 }
 
 // Actualizar carrito - debes definirla
 function actualizarCarrito() {
-  // actualiza la vista del carrito
+  const contenedor = document.getElementById('lista-carrito');
+  if (!contenedor) return;
+
+  contenedor.innerHTML = '';
+  if (carrito.length === 0) {
+    contenedor.innerHTML = '<p>Carrito vacío</p>';
+    return;
+  }
+
+  carrito.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'carrito-item';
+    div.innerHTML = `
+      <p>${item.title || item.nombre} x${item.quantity}</p>
+      <p>$${(item.price * item.quantity).toFixed(2)}</p>
+    `;
+    contenedor.appendChild(div);
+  });
+}
 }
 
 // Inicialización general al cargar la página
