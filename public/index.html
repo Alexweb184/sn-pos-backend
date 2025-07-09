@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="es">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>SN POS</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <link rel="stylesheet" href="style.css" />
   <style>
     /* Mínimos estilos para funcionalidad visual clara */
@@ -860,125 +860,122 @@ function agregarProductoLibre() {
       });
     }
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script>
-  // Exportar corte de caja a Excel
-  document.addEventListener('click', function(e) {
-    if (e.target && e.target.id === 'btn-exportar-corte') {
-      exportarCorteExcel();
-    }
-  });
+   // Exportar corte de caja a Excel
+document.addEventListener('click', function(e) {
+  if (e.target && e.target.id === 'btn-exportar-corte') {
+    exportarCorteExcel();
+  }
+});
 
-  function exportarCorteExcel() {
-    fetch('https://sn-pos-backend.onrender.com/api/ventas')
-      .then(res => res.json())
-      .then(ventas => {
-        const data = ventas.map(v => {
-          const fecha = new Date(v.fecha).toLocaleString();
-          const metodo = v.metodoPago;
-          const productosTexto = v.carrito.map(item => `${item.title} x${item.quantity}`).join(', ');
-          const total = v.carrito.reduce((sum, item) => sum + item.price * item.quantity, 0);
-          const usuario = v.usuario || 'Desconocido';
-          const esApartado = v.esApartado ? 'Sí' : 'No';
-          const abonado = v.esApartado && v.apartadoInfo?.abonado ? `$${v.apartadoInfo.abonado.toFixed(2)}` : '-';
+function exportarCorteExcel() {
+  fetch('https://sn-pos-backend.onrender.com/api/ventas')
+    .then(res => res.json())
+    .then(ventas => {
+      const data = ventas.map(v => {
+        const fecha = new Date(v.fecha).toLocaleString();
+        const metodo = v.metodoPago;
+        const productosTexto = v.carrito.map(item => `${item.title} x${item.quantity}`).join(', ');
+        const total = v.carrito.reduce((sum, item) => sum + item.price * item.quantity, 0);
+        const usuario = v.usuario || 'Desconocido';
+        const esApartado = v.esApartado ? 'Sí' : 'No';
+        const abonado = v.esApartado && v.apartadoInfo?.abonado ? `$${v.apartadoInfo.abonado.toFixed(2)}` : '-';
 
-          return {
-            Fecha: fecha,
-            Usuario: usuario,
-            Metodo: metodo,
-            Productos: productosTexto,
-            'Es Apartado': esApartado,
-            Abonado: abonado,
-            Total: `$${total.toFixed(2)}`
-          };
-        });
-
-        const worksheet = XLSX.utils.json_to_sheet(data);
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, "CorteCaja");
-
-        XLSX.writeFile(workbook, "corte_de_caja.xlsx");
-      })
-      .catch(() => {
-        alert('Error exportando a Excel');
+        return {
+          Fecha: fecha,
+          Usuario: usuario,
+          Metodo: metodo,
+          Productos: productosTexto,
+          'Es Apartado': esApartado,
+          Abonado: abonado,
+          Total: `$${total.toFixed(2)}`
+        };
       });
+
+      const worksheet = XLSX.utils.json_to_sheet(data);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "CorteCaja");
+
+      XLSX.writeFile(workbook, "corte_de_caja.xlsx");
+    })
+    .catch(() => {
+      alert('Error exportando a Excel');
+    });
+}
+
+// Funciones para cargar datos iniciales - debes completar según tu backend
+async function cargarProductos() {
+  // código para cargar productos desde backend o localStorage
+}
+async function cargarUsuarios() {
+  // código para cargar usuarios
+}
+async function cargarApartados() {
+  // código para cargar apartados
+}
+async function cargarPromociones() {
+  // código para cargar promociones
+}
+async function cargarCorte() {
+  // código para mostrar corte de caja
+}
+
+// Mostrar sección en la UI - debes definirla
+function mostrarSeccion(nombre) {
+  // muestra la sección indicada
+}
+
+// Actualizar carrito - debes definirla
+function actualizarCarrito() {
+  // actualiza la vista del carrito
+}
+
+// Inicialización general al cargar la página
+async function init() {
+  await cargarProductos();
+  await cargarUsuarios();
+  await cargarApartados();
+  await cargarPromociones();
+  mostrarSeccion('productos');
+  actualizarCarrito();
+  await cargarCorte();
+}
+
+// Formulario para agregar nuevo producto manual
+document.getElementById('form-nuevo-producto').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const nuevo = {
+    codigo: document.getElementById('np-codigo').value.trim(),
+    nombre: document.getElementById('np-nombre').value.trim(),
+    costo: parseFloat(document.getElementById('np-costo').value),
+    venta: parseFloat(document.getElementById('np-venta').value),
+    mayoreo: parseFloat(document.getElementById('np-mayoreo').value),
+    departamento: document.getElementById('np-departamento').value,
+    inventario: parseInt(document.getElementById('np-inventario').value),
+    minimo: parseInt(document.getElementById('np-minimo').value),
+  };
+
+  if (!nuevo.codigo || !nuevo.nombre || isNaN(nuevo.venta) || isNaN(nuevo.costo)) {
+    return alert('Todos los campos son obligatorios y deben ser válidos.');
   }
 
-  // Funciones para cargar datos iniciales - debes definir estas funciones
-  async function cargarProductos() {
-    // código para cargar productos desde backend o localStorage
+  try {
+    const res = await fetch('/api/productos', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(nuevo)
+    });
+    if (!res.ok) throw new Error('Error al guardar');
+    document.getElementById('nuevo-producto-resultado').textContent = 'Producto guardado correctamente.';
+    document.getElementById('form-nuevo-producto').reset();
+    await cargarProductos(); // recargar productos para actualizar la UI
+  } catch (err) {
+    document.getElementById('nuevo-producto-resultado').textContent = 'Error al guardar producto.';
   }
-  async function cargarUsuarios() {
-    // código para cargar usuarios
-  }
-  async function cargarApartados() {
-    // código para cargar apartados
-  }
-  async function cargarPromociones() {
-    // código para cargar promociones
-  }
-  async function cargarCorte() {
-    // código para mostrar corte de caja
-  }
+});
 
-  // Mostrar sección en la UI - debes definirla
-  function mostrarSeccion(nombre) {
-    // muestra la sección indicada
-  }
-
-  // Actualizar carrito - debes definirla
-  function actualizarCarrito() {
-    // actualiza la vista del carrito
-  }
-
-  // Inicialización general al cargar la página
-  async function init() {
-    await cargarProductos();
-    await cargarUsuarios();
-    await cargarApartados();
-    await cargarPromociones();
-    mostrarSeccion('productos');
-    actualizarCarrito();
-    await cargarCorte();
-  }
-
-  // Guardar nuevo producto manual
-  document.getElementById('form-nuevo-producto').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const nuevo = {
-      codigo: document.getElementById('np-codigo').value.trim(),
-      nombre: document.getElementById('np-nombre').value.trim(),
-      costo: parseFloat(document.getElementById('np-costo').value),
-      venta: parseFloat(document.getElementById('np-venta').value),
-      mayoreo: parseFloat(document.getElementById('np-mayoreo').value),
-      departamento: document.getElementById('np-departamento').value,
-      inventario: parseInt(document.getElementById('np-inventario').value),
-      minimo: parseInt(document.getElementById('np-minimo').value),
-    };
-
-    if (!nuevo.codigo || !nuevo.nombre || isNaN(nuevo.venta) || isNaN(nuevo.costo)) {
-      return alert('Todos los campos son obligatorios y deben ser válidos.');
-    }
-
-    try {
-      const res = await fetch('/api/productos', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(nuevo)
-      });
-      if (!res.ok) throw new Error('Error al guardar');
-      document.getElementById('nuevo-producto-resultado').textContent = 'Producto guardado correctamente.';
-      document.getElementById('form-nuevo-producto').reset();
-      await cargarProductos(); // recargar productos para actualizar la UI
-    } catch (err) {
-      document.getElementById('nuevo-producto-resultado').textContent = 'Error al guardar producto.';
-    }
-  });
-
-  // Llama a init para arrancar la app
-  init();
+// Arranca la app
+init();
 </script>
-  </script>
 </body>
 </html>
 
